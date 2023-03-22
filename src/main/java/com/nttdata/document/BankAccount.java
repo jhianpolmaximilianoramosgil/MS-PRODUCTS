@@ -1,5 +1,7 @@
 package com.nttdata.document;
 
+import java.util.Date;
+
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
@@ -10,16 +12,19 @@ import lombok.NoArgsConstructor;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-@Document(collection = "producto")
+@Document(collection = "bank-account")
 public class BankAccount {
 	
 	@Id
-	private int id;
-	private String accountType;
-	private String accountNumber;
-	private String dni;
-	private double amount;
-	private int edad;
+	private String id;
+	private String accountType; // cc ahorro, cc corriente, cc plazo fijo
+	private String accountNumber; // nro de cuenta
+	private Double amount; //saldo 
+	private Boolean status;  // estado cuanta activa o inactiva
+	private String idCustomer; // id cliente
+	private String typeProfileCustomer; //tipo perfil cliente
+	private Date createAccount; //fecha creacion de la cuenta
+	
 	
 
 }

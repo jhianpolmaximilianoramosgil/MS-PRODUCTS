@@ -1,12 +1,8 @@
 package com.nttdata.controller;
 
-import java.util.List;
-import java.util.Optional;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -15,10 +11,15 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.nttdata.service.BankAccountService;
+
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
+
 import com.nttdata.document.BankAccount;
-import com.nttdata.repository.BankAccountRepository;
 
 @RestController
 @RequestMapping("/BankAccount")
@@ -26,74 +27,63 @@ import com.nttdata.repository.BankAccountRepository;
 public class BankAccountController {
 	
 	@Autowired
-	private BankAccountRepository bAccountRepo;
+    BankAccountService bankAccoService;
 	
 	@PostMapping(value = "/saveBankAccount", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
-	public ResponseEntity<?> saveBankAccount(@RequestBody BankAccount bAccount){
+	@ResponseStatus(HttpStatus.OK)
+	public Mono<BankAccount> saveBankAccount(@RequestBody BankAccount bAccount){
 		
-		try {
-			
-			BankAccount bAccoSave = bAccountRepo.save(bAccount);
-			return new ResponseEntity<BankAccount>(bAccoSave, HttpStatus.CREATED);
-			
-		} catch (Exception e) {
-			
-			return new ResponseEntity<String>(e.getCause().toString(), HttpStatus.INTERNAL_SERVER_ERROR);
-		}
+		return bAccount.getAccountType().equals("ahorros")
+                ?  bankAccoService.saveSavingAccount(bAccount)
+            : bAccount.getAccountType().equals("cuenta corriente")
+                ? bankAccoService.saveCurrentAccount(bAccount)
+                : bankAccoService.saveFixedTerm(bAccount);
 	
 	}
 	
-	@GetMapping(value = "findBankAccountById/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
-	public ResponseEntity<?> getBankAccountById(@PathVariable("id") int id){
+	@GetMapping(value = "/findBankAccountById/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
+	@ResponseStatus(HttpStatus.OK)
+	public Mono<BankAccount> getBankAccountById(@PathVariable("id") String id){
 		
-		try {
-			Optional<BankAccount> bAcco = bAccountRepo.findById(id);
-			return new ResponseEntity<BankAccount>(bAcco.get(), HttpStatus.FOUND); 
-		} catch (Exception e) {
-			return new ResponseEntity<String>(e.getCause().toString(), HttpStatus.INTERNAL_SERVER_ERROR);
-		}
+		System.out.println("Buscar cta. bancaria");
+        return bankAccoService.findById(id);
 		
 	}
 	
-	@GetMapping(value = "findAllBankAccount", produces = MediaType.APPLICATION_JSON_VALUE)
-	public ResponseEntity<?> getAllBankAccount(){
+	@GetMapping(value = "/findAllBankAccount", produces = MediaType.APPLICATION_JSON_VALUE)
+	@ResponseStatus(HttpStatus.OK)
+	public Flux<BankAccount> getAllBankAccount(){
 		
-		try {
-			List<BankAccount> bAcco = bAccountRepo.findAll();
-			return new ResponseEntity<List<BankAccount>>(bAcco, HttpStatus.FOUND); 
-		} catch (Exception e) {
-			return new ResponseEntity<String>(e.getCause().toString(), HttpStatus.INTERNAL_SERVER_ERROR);
-		}
+		System.out.println("Listar cta. bancarias");
+        return bankAccoService.findAll();
 		
 	}
 	
 	@PutMapping(value = "/updateBankAccount", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
-	public ResponseEntity<?> updateBankAccount(@RequestBody BankAccount bAccount){
+	@ResponseStatus(HttpStatus.OK)
+	public Mono<BankAccount> updateBankAccount(@RequestBody BankAccount bAccount){
 		
-		try {
-			
-			BankAccount bAccoUpd = bAccountRepo.save(bAccount);
-			return new ResponseEntity<BankAccount>(bAccoUpd, HttpStatus.ACCEPTED);
-			
-		} catch (Exception e) {
-			
-			return new ResponseEntity<String>(e.getCause().toString(), HttpStatus.INTERNAL_SERVER_ERROR);
-		}
+		System.out.println("Actualizar cta. bancaria");
+        return bankAccoService.update(bAccount);
 	
 	}
 	
 	
-	@DeleteMapping(value = "deleteBankAccountById/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
-	public ResponseEntity<?> deleteBankAccountById(@PathVariable("id") int id){
+	@DeleteMapping(value = "/deleteBankAccountById/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
+	@ResponseStatus(HttpStatus.OK)
+	public Mono<BankAccount> deleteBankAccountById(@PathVariable("id") String id){
 		
-		try {
-			bAccountRepo.deleteById(id);
-			return new ResponseEntity<String>("Se elimino la colección", HttpStatus.OK); 
-		} catch (Exception e) {
-			return new ResponseEntity<String>(e.getCause().toString(), HttpStatus.INTERNAL_SERVER_ERROR);
-		}
+		System.out.println("Eliminar cta. bancaria");
+        return bankAccoService.deleteById(id);
 		
 	}
+	
+	/*@GetMapping(value = "findAccountBankTypeCustomer/{customer}/{type}" ,produces = MediaType.APPLICATION_JSON_VALUE)
+    @ResponseStatus(HttpStatus.OK)
+    public  Mono<BankAccount> findAccountBankTypeCustomer(@PathVariable String type, @PathVariable String customer){
+        System.out.println("Buscar cta. bancaria por tipo y cliente");
+        return bankAccoService.findByTypeAndCustomer(type, customer);
+    }*/
 	
 
 }

@@ -1,13 +1,13 @@
-package com.nttdata;
+package com.nttdata.bank.client;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 @SpringBootApplication
-public class MsBankAccountsApplication {
+public class BankClientServiceApplication {
 
 	public static void main(String[] args) {
-		SpringApplication.run(MsBankAccountsApplication.class, args);
+		SpringApplication.run(BankClientServiceApplication.class, args);
 	}
 
 }
